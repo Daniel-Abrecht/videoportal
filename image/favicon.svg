@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 1056 1056" width="1024" height="1024">
+<!--
+ The first M denotes the starting point. The first 2 A are half circles.
+ The second M sets the upper left corner of the cut out triangle.
+ You can calculate suiting coordinates using sin and cos with a 360/3 angle steps and the result times the triangle outer radius plus half the image with (512).
+ [1,0,2,1].map(x=>[Math.cos(x*Math.PI*2/3)*256+512,Math.sin(x*Math.PI*2/3)*256+512])
+-->
+  <path d="M 0 512 A 1 1 0 0 0 1024 512 A 1 1 0 0 0 0 512 M 384 290.2974 L 768 512 L 384 733.7025 L 384 290.2974 Z" stroke="#000" stroke-width="32" fill="#FFF" />
+</svg>

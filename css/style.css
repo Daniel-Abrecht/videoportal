@@ -1,0 +1,253 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #000;
+  color: #fff;
+  padding: 0;
+  margin: 0;
+}
+
+table {
+  max-width: 100%;
+}
+
+.pagination {
+  text-align: center;
+  padding: 1em;
+}
+
+.pagination a {
+  display: inline-block;
+  color: #000;
+  background-color: #fff;
+  border-radius: 0.1em;
+  text-decoration: none;
+  padding: 0.2em 0.4em;
+  margin: 0.1em;
+}
+
+.pagination a.currentpage {
+  background-color: #0FF;
+}
+
+
+.list > .entry {
+  margin: 0.5rem;
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 15rem;
+  max-width: 20rem;
+  height: 12rem;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #ccc;
+  flex-grow: 1;
+}
+
+.list > .entry .image {
+  position: absolute;
+  left: 0rem;
+  right: 0rem;
+  top: 0rem;
+  bottom: 3rem;
+}
+
+.list > .entry .name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  max-height: 100%;
+  min-height: 3rem;
+  bottom: 0rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid #555;
+  background-color: rgba(0,0,0,0.75);
+  white-space: initial;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+
+.list > .entry .image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.main {
+  display: block;
+  position: absolute;
+  overflow-x: hidden;
+  overflow-y: auto;
+  left: 0;
+  right: 0;
+  top: 4rem;
+  bottom: 0;
+}
+
+.list {
+  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.player {
+  display: block;
+}
+
+.player video {
+  display: block;
+  width: 100%;
+  max-height: 100%;
+}
+
+.header {
+  display: block;
+  text-align: left;
+  padding: 0.5em;
+  font-size: 2em;
+  height: 4rem;
+  border-bottom: 1px solid #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.header a {
+  display: inline;
+  color: inherit;
+  text-decoration: inherit;
+  vertical-align: top;
+}
+
+.header img {
+  display: inline-block;
+  height: 1em;
+  vertical-align: top;
+}
+
+.videoinfo {
+  display: block;
+  text-align: left;
+}
+
+.videoinfo .info {
+  padding: 1em;
+}
+
+.sidebar {
+  position: absolute;
+  left: 0;
+  width: 15rem;
+  top: 4rem;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-right: 1px solid #fff;
+}
+
+.sidebar + .main {
+  left: 15rem;
+}
+
+.sidebar .category > .name {
+  display: block;
+  border-bottom: 1px dotted #444;
+  white-space: nowrap;
+}
+
+.sidebar .category > .name > a {
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar .category > .categoryentrylistextended ~ .name > a {
+  width: calc(100% - 3em);
+}
+
+.sidebar .category > .name > label {
+  width: 3rem;
+  border-left: 1px dotted #444;
+}
+
+.sidebar .category > .name > * {
+  display: inline-block;
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.sidebar .category {
+  border-bottom: 1px solid #fff;
+}
+
+.categoryentrylist .categoryentry {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.5rem 1rem 0.5rem 2rem;
+  border-bottom: 1px dotted #444;
+}
+
+.sidebar .category > .categoryentrylistextender {
+  display: block;
+  text-align: center;
+}
+
+.sidebar .category > .name .categoryentrylistextender::before {
+  content: '▼';
+}
+
+.sidebar .category > .categoryentrylistextended:checked ~ .name .categoryentrylistextender::before {
+  content: '▲';
+}
+
+.sidebar .category > .categoryentrylistextender::before {
+  content: '▼▼▼';
+}
+
+.sidebar .category > .categoryentrylistextended:checked ~ .categoryentrylistextender::before {
+  content: '▲▲▲';
+}
+
+.categoryentrylistextended:not(:checked) ~ .categoryentrylist .categoryentry:nth-child(6) ~ .categoryentry {
+  display: none;
+}
+
+.categoryentrylistextended {
+  display: none;
+}
+
+label {
+  cursor: pointer;
+}
+
+
+@media (max-width: 25rem) {
+  .sidebar {
+     width: 100%;
+  }
+}
+
+@media (max-width: 50rem) {
+  .sidebar {
+    left: calc(100% - 3px);
+    top: 0;
+    border-right: 0 none;
+    border-left: 3px dashed #fff;
+  }
+  .sidebar + .main {
+    left: 0;
+    right: 3px;
+  }
+}
+
