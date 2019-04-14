@@ -11,7 +11,16 @@ import subprocess
 script_root = os.path.dirname(os.path.realpath(__file__))
 collector_base = os.path.join(script_root, "collectors")
 
-dbc = sqlite3.connect('/var/videodb/video.db')
+dbfile='/var/videodb/video.db'
+thumbnails='/var/videodb/thumbnails/'
+
+addVideos=False
+generateThumbnails=True
+removeLostSources=True
+removeVideosWithoutSources=True
+removeUnusedProperties=True
+
+dbc = sqlite3.connect(dbfile)
 db = dbc.cursor()
 
 rebuild=(len(sys.argv) >= 2 and sys.argv[1] == 'rebuild')
@@ -21,6 +30,16 @@ if rebuild:
   db.execute('DROP TABLE IF EXISTS property')
   db.execute('DROP TABLE IF EXISTS video_property')
   db.execute('DROP TABLE IF EXISTS video')
+
+db.execute("PRAGMA foreign_keys = ON")
+
+db.execute('''
+  CREATE TABLE IF NOT EXISTS video (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    date DATETIME
+  )
+''');
 
 db.execute('''
   CREATE TABLE IF NOT EXISTS source (
@@ -32,7 +51,8 @@ db.execute('''
     width INTEGER NOT NULL,
     height INTEGER NOT NULL,
     duration INTEGER NOT NULL,
-    FOREIGN KEY (video) REFERENCES video(id)
+    generated INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (video) REFERENCES video(id) ON DELETE CASCADE ON UPDATE CASCADE
   )
 ''');
 
@@ -47,19 +67,12 @@ db.execute('''
   CREATE TABLE IF NOT EXISTS video_property (
     property INTEGER NOT NULL,
     video INTEGER NOT NULL,
+    is_category INTEGER NOT NULL DEFAULT 1,
     identifying INTEGER NOT NULL DEFAULT 0,
-    value VARCHAR(256),
-    FOREIGN KEY (video) REFERENCES video(id),
-    FOREIGN KEY (property) REFERENCES property(id),
-    PRIMARY KEY (property, video)
-  )
-''');
-
-db.execute('''
-  CREATE TABLE IF NOT EXISTS video (
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    name VARCHAR(32) NOT NULL,
-    date DATETIME
+    value VARCHAR(256) NOT NULL DEFAULT '',
+    FOREIGN KEY (video) REFERENCES video(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (property) REFERENCES property(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (property, video, value)
   )
 ''');
 
@@ -69,11 +82,13 @@ db.execute('''
 collectorname = ''
 
 class Collector:
-  def addVideo(self, name, ids=None, date=None):
+  def addVideo(self, name, ids=None, date=None, collector=None):
     video=None
     if not ids:
-      ids=()
-    ids['collector'] = collectorname
+      ids={}
+    if collector is None:
+      collector = collectorname
+    ids['collector'] = collector
     for id, in  db.execute('SELECT id FROM video WHERE name=?',(name,)).fetchall():
       match=True
       for pname, value in db.execute('SELECT p.name, vp.value FROM video_property AS vp LEFT JOIN property AS p ON vp.property=p.id WHERE vp.video=? AND vp.identifying=1',(id,)).fetchall():
@@ -93,7 +108,7 @@ class Collector:
 #    dbc.commit()
     return video
 
-  def addSource(self,video,location):
+  def addSource(self,video,location,generated=False):
     if db.execute('SELECT id FROM source WHERE location=?', (location,)).fetchone() is not None:
       return
     mime = magic.detect_from_filename(location).mime_type
@@ -131,30 +146,72 @@ class Collector:
     duration = math.ceil(float(info['duration']))
     width = int(info['width'])
     height = int(info['height'])
-    db.execute('REPLACE INTO source (video, location, type, mime, width, height, duration) VALUES (?,?,?,?,?,?,?)', (video, location, type, mime, width, height, duration))
+    db.execute('REPLACE INTO source (video, location, type, mime, width, height, duration, generated) VALUES (?,?,?,?,?,?,?,?)', (video, location, type, mime, width, height, duration, +generated))
 #    dbc.commit()
     return db.lastrowid
 
-  def addProperty(self,video,name,value,primary=False):
+  def addProperty(self,video,name,value,primary=False,iscategory=True):
     db.execute('INSERT OR IGNORE INTO property (name) VALUES (?)', (name,))
     id, = db.execute('SELECT id FROM property WHERE name=?', (name,)).fetchone()
-    db.execute('INSERT OR IGNORE INTO video_property (video,property,identifying,value) VALUES (?,?,?,?)', (video,id,+primary,value))
-    db.execute('UPDATE video_property SET value=?, identifying=? WHERE video=? AND property=?', (value,+primary,video,id))
+    if primary:
+      db.execute('DELETE FROM video_property WHERE video=? AND property=?',(video,id))
+    db.execute('REPLACE INTO video_property (video,property,identifying,value,is_category) VALUES (?,?,?,?,?)', (video,id,+primary,value if value else '',+iscategory))
 #    dbc.commit()
-    return id
 
 c = Collector()
 
-for name in os.listdir(collector_base):
-  if name.endswith(".py"):
-    module = name[:-3]
-    collectorname=module
-    try:
-      collector = __import__("collectors."+module).__dict__[module]
-      collector.run(c)
-    except Exception:
-      print("collector",name,"threw an exception:")
-      traceback.print_exc()
+# Use collectors to collect videos, thumbnails, etc.
+if addVideos:
+  for name in os.listdir(collector_base):
+    if name.endswith(".py"):
+      module = name[:-3]
+      collectorname=module
+      try:
+        collector = __import__("collectors."+module).__dict__[module]
+        collector.run(c)
+      except Exception:
+        print("collector",name,"threw an exception:")
+        traceback.print_exc()
+
+# Generate thumbnails for vidieos without one
+if generateThumbnails:
+  for video, location in db.execute("SELECT DISTINCT video, location FROM source WHERE type='V' AND video NOT IN (SELECT video FROM source WHERE type='I')").fetchall():
+    thumbnail = os.path.join(thumbnails,str(video)+'.png')
+    if os.path.isfile(thumbnail):
+      c.addSource(video, thumbnail, generated=True)
+      continue
+    for command in [
+      ["/usr/bin/ffmpeg","-hide_banner","-loglevel","fatal","-i",location,"-map","0:v","-map","-0:V",thumbnail],
+      ["/usr/bin/ffmpeg","-hide_banner","-loglevel","fatal","-ss","60","-i",location,"-t","1","-f","image2","-vframes","1",thumbnail]
+    ]:
+      result = 1
+      try:
+        result = subprocess.run(command, stdout=subprocess.DEVNULL, stdin=subprocess.DEVNULL, stderr=sys.stderr).returncode
+      except: pass
+      if result == 0:
+        c.addSource(video, thumbnail, generated=True)
+        break;
+
+# Remove sources which no longer exist
+if removeLostSources:
+  for id, location in db.execute("SELECT id, location FROM source").fetchall():
+    if not os.path.isfile(location):
+      db.execute("DELETE FROM source WHERE id=?",(id,))
+
+# Remove media without video or audio sources
+if removeVideosWithoutSources:
+  try:
+    db.execute("DELETE FROM video WHERE id NOT IN (SELECT video FROM source WHERE type IN ('V','A'))")
+  except Exception:
+    print("collector",name,"threw an exception:")
+    traceback.print_exc()
+
+if removeUnusedProperties:
+  try:
+    db.execute("DELETE FROM property WHERE id NOT IN (SELECT property FROM video_property)")
+  except Exception:
+    print("collector",name,"threw an exception:")
+    traceback.print_exc()
 
 dbc.commit()
 dbc.close()

@@ -3,7 +3,9 @@ your prefered location for the videodb.
 
 The build-videodb.py script builds a video db for the videoportal in the maste branch of this repo.
 It creates all tables if necessary. To remove and recreate everything, instead of just adding
-new videos, you can use the rebuild option: `./build-videodb.py rebuild`.
+new videos, you can use the rebuild option: `./build-videodb.py rebuild`. But make sure to
+remove all already generated thumbnails before you rebuild the db, it won't override existing pictures,
+and the ids of the videos won't be the same again.
 
 In order for any videos to be added, you need to put a collector script into the `collector/` directory.
 
