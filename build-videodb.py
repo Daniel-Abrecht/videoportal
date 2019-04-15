@@ -14,7 +14,7 @@ collector_base = os.path.join(script_root, "collectors")
 dbfile='/var/videodb/video.db'
 thumbnails='/var/videodb/thumbnails/'
 
-addVideos=False
+addVideos=True
 generateThumbnails=True
 removeLostSources=True
 removeVideosWithoutSources=True
