@@ -32,6 +32,28 @@ table {
   background-color: #0FF;
 }
 
+.sidebarlist > .entry.current {
+  color: #000;
+  background-color: #FFF;
+}
+
+.sidebarlist > .entry.current .name {
+  background-color: rgba(255,255,255,0.75);
+}
+
+.sidebarlist > .entry {
+  display: block;
+  position: relative;
+  border-bottom: 1px solid #ccc;
+  width: 100%;
+  overflow: hidden;
+  height: 13rem;
+}
+
+.sidebarlist > .entry, .sidebarlist > .entry a {
+  text-decoration: none;
+  color: inherit;
+}
 
 .list > .entry {
   margin: 0.5rem;
@@ -47,15 +69,15 @@ table {
   flex-grow: 1;
 }
 
-.list > .entry .image {
+.list > .entry .image, .sidebarlist > .entry .image {
   position: absolute;
   left: 0rem;
   right: 0rem;
-  top: 0rem;
+  top: 0.5rem;
   bottom: 3rem;
 }
 
-.list > .entry .name {
+.list > .entry .name, .sidebarlist > .entry .name {
   position: absolute;
   left: 0;
   right: 0;
@@ -72,9 +94,14 @@ table {
   flex-direction: column;
   justify-content: center;
   align-content: center;
+  text-align: center;
 }
 
-.list > .entry .image img {
+.sidebarlist > .entry .name {
+  padding: 0.5em;
+}
+
+.list > .entry .image img, .sidebarlist > .entry .image img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -141,7 +168,23 @@ table {
 }
 
 .videoinfo .info {
-  padding: 1em;
+  padding: 0.5rem 1rem;
+}
+
+.videoinfo .info.name {
+  font-size: 1.5em;
+  padding: 1rem;
+}
+
+.videoinfo .info a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.videoinfo .info a.value:not(:last-child)::after {
+  content: ', ';
+  pointer-events: none;
+  cursor: pointer;
 }
 
 .sidebar {

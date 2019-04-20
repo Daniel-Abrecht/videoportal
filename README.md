@@ -75,5 +75,4 @@ but directly the only video contained in it.
 
 ## Other things
 
-This is a responsive, interactive, completely javascript free website.
 It can also be added to the desktop of android devices, in which cases it will appear almost like a real app.

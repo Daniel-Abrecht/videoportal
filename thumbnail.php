@@ -1,6 +1,6 @@
 <?php
 
-if(!isset($_GET['video']) && (!isset($_GET['category']) || !isset($_GET['value'])) ){
+if(!isset($_GET['video']) && (!isset($_GET['collector']) || !isset($_GET['category']) || !isset($_GET['value'])) ){
   http_response_code(404);
   die("File found found!");
 }
@@ -55,12 +55,12 @@ if(isset($_GET['video'])){
   $st = $db->prepare("
     SELECT DISTINCT vps.video
     FROM property AS pc
-      INNER JOIN video_property AS vpc ON vpc.property=pc.id AND pc.name='collector'
+      INNER JOIN video_property AS vpc ON vpc.property=pc.id AND pc.name='collector' AND vpc.value=?
       INNER JOIN video_property AS vps ON vps.video=vpc.video AND vps.value=?
       INNER JOIN property AS ps ON ps.id=vps.property AND ps.name=?
     LIMIT ?
     ");
-  $st->execute([$_GET['value'],$_GET['category'],$max_image_count]);
+  $st->execute([$_GET['collector'],$_GET['value'],$_GET['category'],$max_image_count]);
   $videos = @$st->fetchAll(\PDO::FETCH_NUM);
 
   $max_ratio = 0;

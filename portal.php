@@ -7,12 +7,13 @@ $s_category = @$_GET['category'];
 <html>
 <head>
   <title>Videoportal - <?php echo htmlentities(ucfirst($_GET['collector'])); ?></title>
+  <script src="js/optimizer.js"></script> <!-- Optional stuff -->
 <?php include("head.php"); ?>
 </head>
 <body>
   <div class="header">
     <a href="."><img src="image/favicon.svg" /></a>&ensp;
-    <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>"><img src="<?php echo htmlentities(@glob("image/collector/$_GET[collector].*")[0]); ?>" alt="<?php echo htmlentities(ucfirst($_GET['collector'])); ?>" /></a>&ensp;
+    <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>"><img src="<?php echo urlencode(@glob("image/collector/$_GET[collector].*")[0]); ?>" alt="<?php echo htmlentities(ucfirst($_GET['collector'])); ?>" /></a>&ensp;
 <?php
   $fullurl = 'portal.php?collector='.urlencode($_GET['collector']);
   if(is_string($s_category)){
@@ -95,6 +96,7 @@ foreach($category_tags as $name){
 <?php
 }
 foreach($categories as $name => $entries){
+  $i += 1;
 ?>
   <div class="category">
     <input class="categoryentrylistextended" type="checkbox" id="categoryentrylistextended_<?php echo $i; ?>" />
@@ -133,18 +135,18 @@ if(is_string(@$s_category)){
 ?>
   <a class="entry category" href="?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($category); ?>]=<?php echo urlencode($entry['value']); ?>">
     <span class="image">
-      <img src="thumbnail.php?category=<?php echo urlencode($category); ?>&value=<?php echo urlencode($entry['value']); ?>" />
+      <img src="thumbnail.php?collector=<?php echo urlencode($_GET['collector']); ?>&category=<?php echo urlencode($category); ?>&value=<?php echo urlencode($entry['value']); ?>" />
     </span>
     <span class="name"><?php echo htmlentities(ucfirst($entry['value'])); ?></span>
   </a>
 <?php
     }else{
 ?>
-    <a class="entry video" href="view.php?video=<?php echo urlencode($entry['random_video_id']); ?>&<?php echo arr1D2query('category',$categories); ?>">
+    <a class="entry video" href="view.php?video=<?php echo urlencode($entry['random_video_id']); ?>&<?php echo arr1D2query('category',$categories); ?>#current">
       <span class="image">
-        <img src="thumbnail.php?video=<?php echo htmlentities($entry['random_video_id']); ?>" />
+        <img src="thumbnail.php?video=<?php echo urlencode($entry['random_video_id']); ?>" />
       </span>
-      <span class="name"><?php echo htmlentities(ucfirst($entry['random_video_name'])); ?></span>
+      <span class="name"><?php if($category != 'series') echo htmlentities(ucfirst($entry['value']).": "); echo htmlentities(ucfirst($entry['random_video_name'])); ?></span>
     </a>
 <?php
     }
@@ -187,9 +189,9 @@ if(is_string(@$s_category)){
 
   foreach($videos as $video){
 ?>
-    <a class="entry video" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories); ?>">
+    <a class="entry video" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories); ?>#current">
       <span class="image">
-        <img src="thumbnail.php?video=<?php echo htmlentities($video['id']); ?>" />
+        <img src="thumbnail.php?video=<?php echo urlencode($video['id']); ?>" />
       </span>
       <span class="name"><?php echo htmlentities(ucfirst($video['name'])); ?></span>
     </a>
