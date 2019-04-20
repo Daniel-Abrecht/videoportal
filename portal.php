@@ -13,7 +13,7 @@ $s_category = @$_GET['category'];
 <body>
   <div class="header">
     <a href="."><img src="image/favicon.svg" /></a>&ensp;
-    <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>"><img src="<?php echo urlencode(@glob("image/collector/$_GET[collector].*")[0]); ?>" alt="<?php echo htmlentities(ucfirst($_GET['collector'])); ?>" /></a>&ensp;
+    <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>"><img src="<?php echo str_replace("%2F","/",urlencode(@glob("image/collector/$_GET[collector].*")[0])); ?>" alt="<?php echo htmlentities(ucfirst($_GET['collector'])); ?>" /></a>&ensp;
 <?php
   $fullurl = 'portal.php?collector='.urlencode($_GET['collector']);
   if(is_string($s_category)){

@@ -24,11 +24,10 @@ foreach($st->fetchAll() as $property){
 <body>
   <div class="header">
     <a href="."><img src="image/favicon.svg" /></a>&ensp;
-    <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']); ?>"><img src="<?php echo urlencode(@glob("image/collector/".$video['property']['collector'][0]['value'].".*")[0]); ?>" alt="<?php echo htmlentities(ucfirst($video['property']['collector'][0]['value'])); ?>" /></a>&ensp;
+    <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']); ?>"><img src="<?php echo str_replace("%2F","/",urlencode(@glob("image/collector/".$video['property']['collector'][0]['value'].".*")[0])); ?>" alt="<?php echo htmlentities(ucfirst($video['property']['collector'][0]['value'])); ?>" /></a>&ensp;
     <a href="view.php?video=<?php echo urlencode($_GET['video']); ?>"><?php echo htmlentities($video['name']); ?></a>
   </div>
 <?php
-
 
   $categories = [];
   if(is_array(@$_GET['category']))
@@ -115,6 +114,27 @@ foreach($video['property'] as $name => $values){
 }
 ?>
     </div>
+    <div style="padding: 0.5rem 1rem;" id="sources">Sources:
+<?php
+foreach($all_media_sources as $source){
+?>
+      <a href="video.php?id=<?php echo urlencode($source['id']); ?>" style="color: #FFF;"><?php echo $source['mime'].' '.$source['width'].'x'.$source['height']; ?></a>
+<?php
+}
+?>
+    </div>
+    <div style="padding: 0.5rem 1rem;" id="vlc">VLC: </div>
+<script>
+  var vlc = document.getElementById("vlc");
+  var sources = Array.prototype.slice.call(document.querySelectorAll("#sources a"));
+  for(var i=0; i<sources.length; i++){
+    var url = 'vlc://'+sources[i].href;
+    var a = sources[i].cloneNode(true);
+    a.href = url;
+    vlc.appendChild(document.createTextNode(' '));
+    vlc.appendChild(a);
+  }
+</script>
   </div>
 </body>
 </html>

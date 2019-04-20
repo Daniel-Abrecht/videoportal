@@ -11,6 +11,12 @@ $st = $db->prepare("SELECT * FROM source WHERE video=? ORDER BY type DESC, width
 $st->execute([$_GET['video']]);
 $sources = $st->fetchAll(\PDO::FETCH_ASSOC);
 
+$all_media_sources = [];
+foreach($sources as $source){
+  if($source['type'] != 'I')
+    $all_media_sources[] = $source;
+}
+
 function area_sort($a, $b){
   return $a['width']*$a['height'] - $b['width']*$b['height'];
 }
