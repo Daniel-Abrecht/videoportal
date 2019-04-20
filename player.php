@@ -45,6 +45,12 @@ switch($source['type']){
     echo '  <source src="video.php?id='.urlencode($source['id']).'" '
            . ( $source['width'] && $source['height'] ? 'sizes="'.htmlentities($source['width'].'x'.$source['height']).'" ':'')
            . 'type="'.htmlentities($source['mime']).'" />';
+    if($source['mime'] == 'video/x-matroska'){
+      // Ugly hack for browsers supporting webm but ignoring matroska. Since webm is a subset of matroska, this may sometimes work.
+      echo '  <source src="video.php?id='.urlencode($source['id']).'" '
+             . ( $source['width'] && $source['height'] ? 'sizes="'.htmlentities($source['width'].'x'.$source['height']).'" ':'')
+             . 'type="video/webm" />';
+    }
   } break;
 }
 ?>
