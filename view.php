@@ -87,8 +87,20 @@ include("player.php");
     <div class="videoinfo">
       <div class="info name"><?php echo htmlentities($video['name']); ?></div>
 <?php
+if(isset($video['property']['description'])){
+  echo "<div class=\"info description\">";
+  foreach($video['property']['description'] as $desc){
+    $desc = $desc['value'];
+    echo htmlentities($desc);
+  }
+  echo "</div>\n";
+}
+?>
+<?php
 foreach($video['property'] as $name => $values){
   if($name == 'collector')
+    continue;
+  if($name == 'description')
     continue;
   if(count($values) == 1){
 ?>

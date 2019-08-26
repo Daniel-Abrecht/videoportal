@@ -176,6 +176,12 @@ table {
   padding: 1rem;
 }
 
+.videoinfo .info.description {
+  white-space: pre-wrap;
+  border: 1px dashed #fff;
+  margin: 1em;
+}
+
 .videoinfo .info a {
   color: inherit;
   text-decoration: none;
