@@ -3,6 +3,10 @@ require("db.php");
 require("utils.php");
 $s_category = @$_GET['category'];
 
+if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == '')){
+  unset($_GET['q']);
+}
+
 ?><!doctype html>
 <html>
 <head>
@@ -31,12 +35,30 @@ $s_category = @$_GET['category'];
       }
     }
   }
+  if(isset($_GET['q']) && is_string($_GET['q'])){
+    $es_q = '&q='.urlencode($_GET['q']);
+  }else{
+    $es_q = '';
+  }
+  $fullurl .= $es_q;
+  $fullurlparts = spliturl($fullurl);
 ?>
   </div>
   <div class="sidebar">
+    <form class="search" method="get" action="<?php echo htmlentities($fullurlparts['base']); ?>">
+      <?php
+        foreach($fullurlparts['query'] as $name => $value){
+          if($name == 'q' || $name == 'page')
+            continue;
+          echo '<input type="hidden" name="'.htmlentities($name).'" '.($value?'value="'.htmlentities($value).'" ':'').'/>';
+        }
+      ?>
+      <input type="search" name="q" placeholder="Suche" <?php if(isset($_GET['q'])) echo 'value='.htmlentities($_GET['q']); ?> /><!--
+      --><input type="submit" value="&#x1F50D;"/>
+    </form>
 <?php
-
-$st = $db->prepare("
+$args = [];
+$query = "
   SELECT
     p.name,
     nvp.value,
@@ -49,11 +71,18 @@ $st = $db->prepare("
     INNER JOIN video_property AS vp ON op.id = vp.property AND op.name = 'collector' and vp.value=?
     INNER JOIN video_property AS nvp ON nvp.video=vp.video AND vp.property != nvp.property
     INNER JOIN property AS p ON nvp.property=p.id
-    INNER JOIN video AS v ON v.id=nvp.video
+    INNER JOIN video AS v ON v.id=nvp.video";
+$args[] = $_GET['collector'];
+if(isset($_GET['q']) && is_string($_GET['q'])){
+  $query .= ' WHERE v.name LIKE ?';
+  $args[] = '%'.$_GET['q'].'%';
+}
+$query .= "
   GROUP BY nvp.property, nvp.value
   ORDER BY p.name ASC, nvp.value ASC
-");
-$st->execute([$_GET['collector']]);
+";
+$st = $db->prepare($query);
+$st->execute($args);
 $tmp = $st->fetchAll(\PDO::FETCH_ASSOC);
 $properties = [];
 $tags = [];
@@ -88,7 +117,7 @@ foreach($category_tags as $name){
 ?>
   <div class="category">
     <span class="name">
-      <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($name); ?>]">
+      <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($name).$es_q; ?>]">
         <?php echo htmlentities(ucfirst($name)); ?>
       </a>
     </span>
@@ -101,7 +130,7 @@ foreach($categories as $name => $entries){
   <div class="category">
     <input class="categoryentrylistextended" type="checkbox" id="categoryentrylistextended_<?php echo $i; ?>" />
     <span class="name">
-      <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>&category=<?php echo urlencode($name); ?>">
+      <a href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>&category=<?php echo urlencode($name).$es_q; ?>">
         <?php echo htmlentities(ucfirst($name)); ?>
       </a><label class="categoryentrylistextender" for="categoryentrylistextended_<?php echo $i; ?>"></label>
     </span>
@@ -109,7 +138,7 @@ foreach($categories as $name => $entries){
 <?php
   foreach($entries as $entry){
 ?>
-      <a class="categoryentry" href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($name); ?>]=<?php echo urlencode($entry['value']); ?>">
+      <a class="categoryentry" href="portal.php?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($name); ?>]=<?php echo urlencode($entry['value']).$es_q; ?>">
         <span class="name"><?php echo htmlentities($entry['value']); ?></span>
       </a>
 <?php
@@ -133,7 +162,7 @@ if(is_string(@$s_category)){
       continue;
     }else if($entry['video_count'] > 1){
 ?>
-  <a class="entry category" href="?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($category); ?>]=<?php echo urlencode($entry['value']); ?>">
+  <a class="entry category" href="?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($category); ?>]=<?php echo urlencode($entry['value']).$es_q; ?>">
     <span class="image">
       <img src="thumbnail.php?collector=<?php echo urlencode($_GET['collector']); ?>&category=<?php echo urlencode($category); ?>&value=<?php echo urlencode($entry['value']); ?>" />
     </span>
@@ -142,7 +171,7 @@ if(is_string(@$s_category)){
 <?php
     }else{
 ?>
-    <a class="entry video" href="view.php?video=<?php echo urlencode($entry['random_video_id']); ?>&<?php echo arr1D2query('category',$categories); ?>#current">
+    <a class="entry video" href="view.php?video=<?php echo urlencode($entry['random_video_id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
       <span class="image">
         <img src="thumbnail.php?video=<?php echo urlencode($entry['random_video_id']); ?>" />
       </span>
@@ -169,6 +198,10 @@ if(is_string(@$s_category)){
     $query .= " INNER JOIN property AS p$i ON vp$i.property=p$i.id AND p$i.name=?";
     $args[] = $name;
   }
+  if(isset($_GET['q']) && is_string($_GET['q'])){
+    $query .= ' WHERE v.name LIKE ?';
+    $args[] = '%'.$_GET['q'].'%';
+  }
   $query .= ' ORDER BY v.date DESC, v.name ASC';
   $st = $db->prepare('SELECT count(v.id) AS count '.$query);
   $st->execute($args);
@@ -189,7 +222,7 @@ if(is_string(@$s_category)){
 
   foreach($videos as $video){
 ?>
-    <a class="entry video" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories); ?>#current">
+    <a class="entry video" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
       <span class="image">
         <img src="thumbnail.php?video=<?php echo urlencode($video['id']); ?>" />
       </span>

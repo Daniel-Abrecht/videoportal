@@ -15,6 +15,16 @@ function arr1D2query($name, $x){
   return implode('&',$parts);
 }
 
+function spliturl($url){
+  $res = [];
+  list($res['base'], $query) = explode('?',$url,2);
+  $res['query'] = [];
+  foreach(explode('&',$query) as $item){
+    list($key, $value) = explode('=', $item, 2);
+    $res['query'][urldecode($key)] = urldecode($value);
+  }
+  return $res;
+}
 
 function pagination_link($fullurl, $page, $i){
   return '<a href="'.$fullurl.'&page='.urlencode($i).'"'.($page==$i?' class="currentpage"':'').'>'.($i+1).'</a>';

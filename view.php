@@ -44,6 +44,10 @@ foreach($st->fetchAll() as $property){
     $query .= " INNER JOIN property AS p$i ON vp$i.property=p$i.id AND p$i.name=?";
     $args[] = $name;
   }
+  if(isset($_GET['q']) && is_string($_GET['q'])){
+    $query .= ' WHERE v.name LIKE ?';
+    $args[] = '%'.$_GET['q'].'%';
+  }
   $query .= ' ORDER BY v.date DESC, v.name ASC';
   $st = $db->prepare($query);
   $st->execute($args);

@@ -204,6 +204,45 @@ table {
   border-right: 1px solid #fff;
 }
 
+.sidebar input[type=text],
+.sidebar input[type=search] {
+  display: inline-block;
+  width: 100%;
+  color: inherit;
+  background-color: transparent;
+  height: 2em;
+  line-height: 2em;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0 1rem;
+  font-size: inherit;
+  border: 0 none;
+}
+
+.sidebar .search {
+  border-bottom: 1px dotted #444;
+}
+
+.sidebar .search input[type=search] {
+  width: calc(100% - 2em);
+  padding-right: 0;
+}
+
+.sidebar .search input[type=submit] {
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  margin: 0;
+  padding: 0;
+  border: 0 none;
+  color: inherit;
+  background-color: transparent;
+  font-size: inherit;
+  cursor: pointer;
+  line-height: 2em;
+  vertical-align: middle;
+}
+
 .sidebar + .main {
   left: 15rem;
 }
