@@ -2,6 +2,15 @@
 require("db.php");
 require("utils.php");
 
+if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == ''))
+  unset($_GET['q']);
+
+if(isset($_GET['q']) && is_string($_GET['q'])){
+  $es_q = '&q='.urlencode($_GET['q']);
+}else{
+  $es_q = '';
+}
+
 $st = $db->prepare("SELECT * FROM video WHERE id=? LIMIT 1");
 $st->execute([$_GET['video']]);
 $video = $st->fetchAll()[0];
@@ -70,7 +79,7 @@ foreach($st->fetchAll() as $property){
     for($i=$s; $i<$e; $i++){
       $v = $videos[$i];
 ?>
-      <a class="entry video <?php if($i == $index) echo 'current'; ?>" <?php if($i == $index) echo 'name="current" id="current" '; ?>href="view.php?video=<?php echo urlencode($v['id']); ?>&<?php echo arr1D2query('category',$categories); ?>#current">
+      <a class="entry video <?php if($i == $index) echo 'current'; ?>" <?php if($i == $index) echo 'name="current" id="current" '; ?>href="view.php?video=<?php echo urlencode($v['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
         <span class="image">
           <img src="thumbnail.php?video=<?php echo urlencode($v['id']); ?>" />
         </span>

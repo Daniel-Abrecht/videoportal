@@ -3,9 +3,8 @@ require("db.php");
 require("utils.php");
 $s_category = @$_GET['category'];
 
-if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == '')){
+if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == ''))
   unset($_GET['q']);
-}
 
 ?><!doctype html>
 <html>
