@@ -12,10 +12,8 @@ function setCookie(name, value, days){
   document.cookie = name + "=" + (value || "")  + expires + "; path=/";
 }
 
-if(!window.HTMLSourceElement || !HTMLSourceElement.prototype || !('sizes' in HTMLSourceElement.prototype)){
-  // Browser doesn't support choosing ideal video source based on size.
-  // This could lead to devices with low processing power or bad network connectivity to fail to play the video smoothly
-  var screensize = [screen.width*(window.devicePixelRatio||1), screen.height*(window.devicePixelRatio||1)].join('x');
-  // Setting a cookie to remove oversized sources at server side in player.php. Otherwise, the browser may still start loading the wrong source before it can be removed.
-  setCookie("screensize", screensize, 1);
-}
+// Setting a cookie to sort videos by resolution in player.php
+// Even browsers which support the sizes attibute in videos often just use the first source otherwise,
+// even if it's unreasonably large or small for the devices screen size
+var screensize = [screen.width*(window.devicePixelRatio||1), screen.height*(window.devicePixelRatio||1)].join('x');
+setCookie("screensize", screensize, 1);

@@ -163,7 +163,7 @@ if(is_string(@$s_category)){
 ?>
   <a class="entry category" href="?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($category); ?>]=<?php echo urlencode($entry['value']).$es_q; ?>">
     <span class="image">
-      <img src="thumbnail.php?collector=<?php echo urlencode($_GET['collector']); ?>&category=<?php echo urlencode($category); ?>&value=<?php echo urlencode($entry['value']); ?>" />
+      <img src="thumbnail.php?collector=<?php echo urlencode($_GET['collector']); ?>&category=<?php echo urlencode($category); ?>&value=<?php echo urlencode($entry['value']); ?>&area=125000" />
     </span>
     <span class="name"><?php echo htmlentities(ucfirst($entry['value'])); ?></span>
   </a>
@@ -172,7 +172,7 @@ if(is_string(@$s_category)){
 ?>
     <a class="entry video" href="view.php?video=<?php echo urlencode($entry['random_video_id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
       <span class="image">
-        <img src="thumbnail.php?video=<?php echo urlencode($entry['random_video_id']); ?>" />
+        <img src="thumbnail.php?video=<?php echo urlencode($entry['random_video_id']); ?>&area=125000" />
       </span>
       <span class="name"><?php if($category != 'series') echo htmlentities(ucfirst($entry['value']).": "); echo htmlentities(ucfirst($entry['random_video_name'])); ?></span>
     </a>
@@ -223,7 +223,7 @@ if(is_string(@$s_category)){
 ?>
     <a class="entry video" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
       <span class="image">
-        <img src="thumbnail.php?video=<?php echo urlencode($video['id']); ?>" />
+        <img src="thumbnail.php?video=<?php echo urlencode($video['id']); ?>&area=125000" />
       </span>
       <span class="name"><?php echo htmlentities(ucfirst($video['name'])); ?></span>
     </a>

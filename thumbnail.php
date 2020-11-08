@@ -34,6 +34,10 @@ function getVideoThumbnail($id){
   return @$st->fetchAll(\PDO::FETCH_ASSOC)[0];
 }
 
+$area = +@$_GET['area'];
+if(!$area || $area <= 0)
+  $area = 500*500;
+
 if(isset($_GET['video'])){
 
   $image = getVideoThumbnail($_GET['video']);
@@ -46,7 +50,28 @@ if(isset($_GET['video'])){
   set_cache_header(filemtime($image['location']),$image['location']);
 
   header("Content-Type: ".$image['mime']);
-  readfile($image['location']);
+
+  if(!isset($_GET['area']) || $image['width'] * $image['height'] < $area){
+    readfile($image['location']);
+  }else{
+    $im = @imagecreatefrompng($image['location']);
+    if(!$im)
+      $im = @imagecreatefromjpeg($image['location']);
+    if(!$im)
+      readfile($image['location']);
+    if($im){
+      $ratio = $image['width'] / $image['height'];
+      $h = sqrt($area/$ratio);
+      $w = $ratio * $h;
+      $png = imagecreatetruecolor($w, $h);
+      imagesavealpha($png, true);
+      $trans_colour = imagecolorallocatealpha($png, 0, 0, 0, 127);
+      imagefill($png, 0, 0, $trans_colour);
+      imagecopyresized($png, $im, 0, 0, 0, 0, $w, $h, $image['width'], $image['height']);
+      header("Content-type: image/png");
+      imagepng($png);
+    }
+  }
 
 }else if(isset($_GET['category'])){
 
@@ -102,7 +127,6 @@ if(isset($_GET['video'])){
     die("File found found!");
   }
 
-  $area = 500*500;
   $h = sqrt($area/$max_ratio);
   $w = $max_ratio * $h;
 
@@ -115,7 +139,7 @@ if(isset($_GET['video'])){
   $white = imagecolorallocate($png, 255, 255, 255);
 
   $i = 0;
-  $gd = 60;
+  $gd = min($w,$h) / 5;
   $d = $gd / ($thumbnail_count-1);
   foreach($thumbnails as $thumb){
     $ri = $thumbnail_count-$i-1;

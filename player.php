@@ -43,7 +43,7 @@ if(isset($_COOKIE['screensize'])){
 $sources = array_reverse($sources);
 
 ?>
-<video controls poster="thumbnail.php?video=<?php echo urlencode($_GET['video']); ?>">
+<video controls poster="thumbnail.php?video=<?php echo urlencode($_GET['video']); ?>&area=1000000">
 <?php
 foreach($sources as $source)
 switch($source['type']){

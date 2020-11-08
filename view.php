@@ -81,7 +81,7 @@ foreach($st->fetchAll() as $property){
 ?>
       <a class="entry video <?php if($i == $index) echo 'current'; ?>" <?php if($i == $index) echo 'name="current" id="current" '; ?>href="view.php?video=<?php echo urlencode($v['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
         <span class="image">
-          <img src="thumbnail.php?video=<?php echo urlencode($v['id']); ?>" />
+          <img src="thumbnail.php?video=<?php echo urlencode($v['id']); ?>&area=125000" />
         </span>
         <span class="name"><?php echo htmlentities(ucfirst($v['name'])); ?></span>
       </a>
