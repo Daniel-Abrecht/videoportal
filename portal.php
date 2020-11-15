@@ -70,10 +70,13 @@ $query = "
     INNER JOIN video_property AS vp ON op.id = vp.property AND op.name = 'collector' and vp.value=?
     INNER JOIN video_property AS nvp ON nvp.video=vp.video AND vp.property != nvp.property
     INNER JOIN property AS p ON nvp.property=p.id
-    INNER JOIN video AS v ON v.id=nvp.video";
+    INNER JOIN video AS v ON v.id=nvp.video
+  WHERE ( nvp.is_category OR p.name = ? )
+";
 $args[] = $_GET['collector'];
+$args[] = $s_category && is_string($s_category) ? $s_category : 'series';
 if(isset($_GET['q']) && is_string($_GET['q'])){
-  $query .= ' WHERE v.name LIKE ?';
+  $query .= ' AND v.name LIKE ?';
   $args[] = '%'.$_GET['q'].'%';
 }
 $query .= "
@@ -153,13 +156,23 @@ foreach($categories as $name => $entries){
   <div class="main">
 <?php
 
+$limit = 120; // highly composite number: https://oeis.org/A002182
+$page = intval(@$_GET['page']);
+$pages = 0;
+
 if(is_string(@$s_category)){
   echo '<div class="list">';
   $category = $s_category;
+  $i = 0;
   foreach($properties[$category] as $entry){
-    if($entry['video_count'] == 0){
+    if($entry['video_count'] == 0)
       continue;
-    }else if($entry['video_count'] > 1){
+    $i += 1;
+    if($i <= $page * $limit)
+      continue;
+    if($i > ($page+1) * $limit)
+      continue;
+    if($entry['video_count'] > 1){
 ?>
   <a class="entry category" href="?collector=<?php echo urlencode($_GET['collector']); ?>&category[<?php echo urlencode($category); ?>]=<?php echo urlencode($entry['value']).$es_q; ?>">
     <span class="image">
@@ -180,9 +193,8 @@ if(is_string(@$s_category)){
     }
   }
   echo '</div>';
+  $pages = ceil($i/$limit);
 }else{
-  $page = intval(@$_GET['page']);
-  $limit = 120; // highly composite number: https://oeis.org/A002182
   $categories = [];
   if(is_array(@$s_category))
     $categories = $s_category;
@@ -230,8 +242,8 @@ if(is_string(@$s_category)){
 <?php
   }
   echo '</div>';
-  echo pagination($pages, $page, $fullurl);
 }
+echo pagination($pages, $page, $fullurl);
 ?>
   </div>
 </body>
