@@ -7,11 +7,13 @@ import magic
 import sqlite3
 import datetime
 import subprocess
+import shutil
 
 script_root = os.path.dirname(os.path.realpath(__file__))
 collector_base = os.path.join(script_root, "collectors")
 
-dbfile='/var/videodb/video.db'
+dbfile_orig='/var/videodb/video.db'
+dbfile='/var/videodb/video-next.db'
 thumbnails='/var/videodb/thumbnails/'
 
 addVideos=True
@@ -19,6 +21,10 @@ generateThumbnails=True
 removeLostSources=True
 removeVideosWithoutSources=True
 removeUnusedProperties=True
+
+try:
+  shutil.copy(dbfile_orig, dbfile)
+except FileNotFoundError: pass
 
 dbc = sqlite3.connect(dbfile)
 db = dbc.cursor()
@@ -178,8 +184,11 @@ if generateThumbnails:
   for video, location in db.execute("SELECT DISTINCT video, location FROM source WHERE type='V' AND video NOT IN (SELECT video FROM source WHERE type='I')").fetchall():
     thumbnail = os.path.join(thumbnails,str(video)+'.png')
     if os.path.isfile(thumbnail):
-      c.addSource(video, thumbnail, generated=True)
-      continue
+      try:
+        c.addSource(video, thumbnail, generated=True)
+        continue
+      except Exception:
+        print("Failed to add existing thumbnail for video", video)
     for command in [
       ["/usr/bin/ffmpeg","-hide_banner","-loglevel","fatal","-i",location,"-map","0:v","-map","-0:V",thumbnail],
       ["/usr/bin/ffmpeg","-hide_banner","-loglevel","fatal","-ss","60","-i",location,"-t","1","-f","image2","-vframes","1",thumbnail]
@@ -189,8 +198,12 @@ if generateThumbnails:
         result = subprocess.run(command, stdout=subprocess.DEVNULL, stdin=subprocess.DEVNULL, stderr=sys.stderr).returncode
       except: pass
       if result == 0:
-        c.addSource(video, thumbnail, generated=True)
-        break;
+        try:
+          c.addSource(video, thumbnail, generated=True)
+          break;
+        except Exception:
+          print("Failed to add or created thumbnail for video", video)
+
 
 # Remove sources which no longer exist
 if removeLostSources:
@@ -215,3 +228,5 @@ if removeUnusedProperties:
 
 dbc.commit()
 dbc.close()
+
+os.rename(dbfile, dbfile_orig)
