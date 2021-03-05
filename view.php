@@ -99,6 +99,8 @@ include("player.php");
 ?>
     <div class="videoinfo">
       <div class="info name"><?php echo htmlentities($video['name']); ?></div>
+      <?php if(@$video['date']){ ?><div class="info date"><?php echo htmlentities(date('Y-m-d', $video['date'])); ?></div><?php } ?>
+      <br clear="both" />
 <?php
 if(isset($video['property']['description'])){
   echo "<div class=\"info description\">";
@@ -116,10 +118,15 @@ foreach($video['property'] as $name => $values){
   if($name == 'description')
     continue;
   if(count($values) == 1){
+    if($name == 'url'){
+      $url = $values[0]['value'];
+    }else{
+      $url = 'portal.php?collector='.urlencode($video['property']['collector'][0]['value']).'&category['.urlencode($name).']='.urlencode($values[0]['value']);
+    }
 ?>
     <div class="info">
       <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category='.urlencode($name); ?>"><?php echo htmlentities(ucfirst($name)); ?></a>:
-      <a class="value" href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category['.urlencode($name).']='.urlencode($values[0]['value']); ?>"><?php echo htmlentities($values[0]['value']); ?></a>
+      <a class="value" href="<?php echo htmlentities($url); ?>"><?php echo htmlentities($values[0]['value']); ?></a>
     </div>
 <?php
   }else{
@@ -128,8 +135,13 @@ foreach($video['property'] as $name => $values){
       <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category='.urlencode($name); ?>"><?php echo htmlentities(ucfirst($name)); ?></a>:
 <?php
     foreach($values as $value){
+      if($name == 'url'){
+        $url = $value['value'];
+      }else{
+        $url = 'portal.php?collector='.urlencode($video['property']['collector'][0]['value']).'&category['.urlencode($name).']='.urlencode($value['value']);
+      }
 ?>
-      <a class="value" href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category['.urlencode($name).']='.urlencode($value['value']); ?>"><?php echo htmlentities($value['value']); ?></a>
+      <a class="value" href="<?php echo htmlentities($url); ?>"><?php echo htmlentities($value['value']); ?></a>
 <?php
     }
 ?>
