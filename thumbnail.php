@@ -49,16 +49,21 @@ if(isset($_GET['video'])){
 
   set_cache_header(filemtime($image['location']),$image['location']);
 
-  header("Content-Type: ".$image['mime']);
+  ini_set('display_errors', 0);
 
-  if(!isset($_GET['area']) || $image['width'] * $image['height'] < $area){
+  if((!isset($_GET['area']) || $image['width'] * $image['height'] < $area) && $image['mime'] != "image/webp"){
+    header("Content-Type: ".$image['mime']);
     readfile($image['location']);
   }else{
     $im = @imagecreatefrompng($image['location']);
     if(!$im)
       $im = @imagecreatefromjpeg($image['location']);
     if(!$im)
+      $im = @imagecreatefromwebp($image['location']);
+    if(!$im){
+      header("Content-Type: ".$image['mime']);
       readfile($image['location']);
+    }
     if($im){
       $ratio = $image['width'] / $image['height'];
       $h = sqrt($area/$ratio);
@@ -83,10 +88,13 @@ if(isset($_GET['video'])){
       INNER JOIN video_property AS vpc ON vpc.property=pc.id AND pc.name='collector' AND vpc.value=?
       INNER JOIN video_property AS vps ON vps.video=vpc.video AND vps.value=?
       INNER JOIN property AS ps ON ps.id=vps.property AND ps.name=?
+      INNER JOIN video AS v ON v.id=vpc.video
+    WHERE EXISTS(SELECT * FROM source AS s WHERE s.type='I' AND s.video=v.id)
+    ORDER BY v.date DESC, v.id DESC
     LIMIT ?
     ");
   $st->execute([$_GET['collector'],$_GET['value'],$_GET['category'],$max_image_count]);
-  $videos = @$st->fetchAll(\PDO::FETCH_NUM);
+  $videos = array_reverse(@$st->fetchAll(\PDO::FETCH_NUM));
 
   $max_ratio = 0;
   $max_width = 0;
@@ -114,6 +122,8 @@ if(isset($_GET['video'])){
     if(!$im)
       $im = @imagecreatefromjpeg($thumb['location']);
     if(!$im)
+      $im = @imagecreatefromwebp($thumb['location']);
+    if(!$im)
       continue;
     $thumb['im'] = $im;
     $thumb['ratio'] = $thumb['width'] / $thumb['height'];
@@ -126,6 +136,7 @@ if(isset($_GET['video'])){
     http_response_code(404);
     die("File found found!");
   }
+  ini_set('display_errors', 0);
 
   $h = sqrt($area/$max_ratio);
   $w = $max_ratio * $h;
@@ -140,7 +151,11 @@ if(isset($_GET['video'])){
 
   $i = 0;
   $gd = min($w,$h) / 5;
-  $d = $gd / ($thumbnail_count-1);
+  if($thumbnail_count > 1){
+    $d = $gd / ($thumbnail_count-1);
+  }else{
+    $d=0;
+  }
   foreach($thumbnails as $thumb){
     $ri = $thumbnail_count-$i-1;
     $x = $ri * $d;
