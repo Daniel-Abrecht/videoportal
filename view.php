@@ -167,6 +167,7 @@ foreach($all_media_sources as $source){
   for(var i=0; i<sources.length; i++){
     var url = 'vlc://'+sources[i].href;
     var a = sources[i].cloneNode(true);
+    a.target = '_blank';
     a.href = url;
     vlc.appendChild(document.createTextNode(' '));
     vlc.appendChild(a);

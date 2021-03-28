@@ -112,6 +112,7 @@ table {
   position: absolute;
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   left: 0;
   right: 0;
   top: 4rem;
@@ -210,6 +211,7 @@ table {
   bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   border-right: 1px solid #fff;
 }
 
