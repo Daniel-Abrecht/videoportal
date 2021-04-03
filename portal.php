@@ -52,7 +52,7 @@ if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == ''))
           echo '<input type="hidden" name="'.htmlentities($name).'" '.($value?'value="'.htmlentities($value).'" ':'').'/>';
         }
       ?>
-      <input type="search" name="q" placeholder="Suche" <?php if(isset($_GET['q'])) echo 'value='.htmlentities($_GET['q']); ?> /><!--
+      <input type="search" name="q" placeholder="Suche" <?php if(isset($_GET['q'])) echo 'value="'.htmlentities($_GET['q']); ?>" /><!--
       --><input type="submit" value="&#x1F50D;"/>
     </form>
 <?php
