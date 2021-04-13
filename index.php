@@ -8,7 +8,7 @@ require("db.php");
 </head>
 <body>
   <div class="header">Medienart/quelle auswählen</div>
-  <div class="main list">
+  <div class="main"><div class="list">
 <?php
 
 $collectors = array_map("current", $db->query("SELECT DISTINCT vp.value as collector FROM property AS p LEFT JOIN video_property AS vp ON p.id = vp.property WHERE p.name = 'collector'")->fetchAll(\PDO::FETCH_NUM));
@@ -25,6 +25,6 @@ foreach($collectors as $collector){
 }
 
 ?>
-  </div>
+  </div></div>
 </body>
 </html>

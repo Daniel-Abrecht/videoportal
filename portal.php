@@ -213,7 +213,7 @@ if(is_string(@$s_category)){
     $query .= ' WHERE v.name LIKE ?';
     $args[] = '%'.$_GET['q'].'%';
   }
-  $query .= ' ORDER BY v.date DESC, v.name ASC';
+  $query .= ' ORDER BY v.date DESC, v.name DESC';
   $st = $db->prepare('SELECT count(v.id) AS count '.$query);
   $st->execute($args);
   $count = $st->fetchAll(\PDO::FETCH_ASSOC)[0]['count'];
@@ -223,7 +223,7 @@ if(is_string(@$s_category)){
   $query .= ' LIMIT ? OFFSET ?';
   $args[] = $limit;
   $args[] = $page * $limit;
-  $st = $db->prepare('SELECT v.* '.$query);
+  $st = $db->prepare('SELECT v.*, EXISTS(SELECT * FROM `source` WHERE video=v.id AND type=\'I\') AS has_thumb '.$query);
   $st->execute($args);
   $videos = $st->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -233,10 +233,12 @@ if(is_string(@$s_category)){
 
   foreach($videos as $video){
 ?>
-    <a class="entry video" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
-      <span class="image">
-        <img src="thumbnail.php?video=<?php echo urlencode($video['id']); ?>&area=125000" />
-      </span>
+    <a class="entry video<?php echo $video['has_thumb'] ? '' : ' nothumb'; ?>" href="view.php?video=<?php echo urlencode($video['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
+      <?php if($video['has_thumb']){ ?>
+        <span class="image">
+          <img src="thumbnail.php?video=<?php echo urlencode($video['id']); ?>&area=125000" />
+        </span>
+      <?php } ?>
       <span class="name"><?php echo htmlentities(ucfirst($video['name'])); ?></span>
     </a>
 <?php

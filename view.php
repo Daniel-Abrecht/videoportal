@@ -57,7 +57,7 @@ foreach($st->fetchAll() as $property){
     $query .= ' WHERE v.name LIKE ?';
     $args[] = '%'.$_GET['q'].'%';
   }
-  $query .= ' ORDER BY v.date DESC, v.name ASC';
+  $query .= ' ORDER BY v.date DESC, v.name DESC';
   $st = $db->prepare($query);
   $st->execute($args);
   $videos = $st->fetchAll(\PDO::FETCH_ASSOC);
@@ -78,11 +78,17 @@ foreach($st->fetchAll() as $property){
     $s = max(0, $e - $n);
     for($i=$s; $i<$e; $i++){
       $v = $videos[$i];
+      $st = $db->prepare('SELECT EXISTS(SELECT * FROM `source` WHERE video=? AND type=\'I\') as has_thumb');
+      $st->execute([$v['id']]);
+      $has_thumb = $st->fetch()[0];
 ?>
-      <a class="entry video <?php if($i == $index) echo 'current'; ?>" <?php if($i == $index) echo 'name="current" id="current" '; ?>href="view.php?video=<?php echo urlencode($v['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
-        <span class="image">
-          <img src="thumbnail.php?video=<?php echo urlencode($v['id']); ?>&area=125000" />
-        </span>
+      <a class="entry video<?php if($i == $index) echo ' current'; if(!$has_thumb) echo ' nothumb'; ?>" href="view.php?video=<?php echo urlencode($v['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">
+        <?php if($i == $index){ ?><span name="current" id="current"></span><?php } ?>
+        <?php if($has_thumb){ ?>
+          <span class="image">
+            <img src="thumbnail.php?video=<?php echo urlencode($v['id']); ?>&area=125000" />
+          </span>
+        <?php } ?>
         <span class="name"><?php echo htmlentities(ucfirst($v['name'])); ?></span>
       </a>
 <?php
