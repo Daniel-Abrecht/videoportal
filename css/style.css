@@ -164,9 +164,8 @@ table {
   max-height: 100%;
 }
 
-.player audio {
-  display: block;
-  width: 100%;
+.player video.audio {
+  height: 5rem;
 }
 
 .header {

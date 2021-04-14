@@ -23,3 +23,4 @@
 <link rel="mask-icon" type="image/svg+xml" href="image/favicon.svg"/>
 <link rel="apple-touch-icon" type="image/svg+xml" href="image/favicon.svg"/>
 <link rel="manifest" href="manifest.php"/>
+<script src="js/main.js" defer></script> <!-- Optional -->

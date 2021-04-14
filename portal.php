@@ -10,7 +10,6 @@ if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == ''))
 <html>
 <head>
   <title>Videoportal - <?php echo htmlentities(ucfirst($_GET['collector'])); ?></title>
-  <script src="js/optimizer.js"></script> <!-- Optional stuff -->
 <?php include("head.php"); ?>
 </head>
 <body>

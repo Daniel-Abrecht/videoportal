@@ -52,7 +52,7 @@ if(isset($_COOKIE['screensize'])){
 $sources = array_reverse($sources);
 
 ?>
-<<?php echo $all_audio ? 'audio' : 'video'; ?> controls poster="thumbnail.php?video=<?php echo urlencode($_GET['video']); ?>&area=1000000" autoplay>
+<video class="<?php echo $all_audio ? 'audio' : 'video'; ?>" controls poster="thumbnail.php?video=<?php echo urlencode($_GET['video']); ?>&area=1000000" autoplay preload="auto" id="player">
 <?php
 foreach($sources as $source)
 switch($source['type']){
@@ -70,4 +70,4 @@ switch($source['type']){
   } break;
 }
 ?>
-</<?php echo $all_audio ? 'audio' : 'video'; ?>>
+</video>

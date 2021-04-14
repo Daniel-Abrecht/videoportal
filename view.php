@@ -27,14 +27,13 @@ foreach($st->fetchAll() as $property){
 <html>
 <head>
   <title>Videoportal - <?php echo htmlentities($video['name']); ?></title>
-  <script src="js/optimizer.js"></script> <!-- Optional stuff -->
 <?php include("head.php"); ?>
 </head>
 <body>
   <div class="header">
     <a href="."><img src="image/favicon.svg" /></a>&ensp;
     <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']); ?>"><img src="<?php echo str_replace("%2F","/",urlencode(@glob("image/collector/".$video['property']['collector'][0]['value'].".*")[0])); ?>" alt="<?php echo htmlentities(ucfirst($video['property']['collector'][0]['value'])); ?>" /></a>&ensp;
-    <a href="view.php?video=<?php echo urlencode($_GET['video']); ?>"><?php echo htmlentities($video['name']); ?></a>
+    <a href="view.php?video=<?php echo urlencode($_GET['video']); ?>#current"><?php echo htmlentities($video['name']); ?></a>
   </div>
 <?php
 
