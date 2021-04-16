@@ -22,5 +22,6 @@
 <link rel="shortcut icon" type="image/png" sizes="16x16" href="image/favicon16x16.png"/>
 <link rel="mask-icon" type="image/svg+xml" href="image/favicon.svg"/>
 <link rel="apple-touch-icon" type="image/svg+xml" href="image/favicon.svg"/>
+<link rel="apple-touch-icon" type="image/png" sizes="256x256" href="image/favicon256x256.png"/>
 <link rel="manifest" href="manifest.php"/>
 <script src="js/main.js" defer></script> <!-- Optional -->

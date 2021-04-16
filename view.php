@@ -2,6 +2,15 @@
 require("db.php");
 require("utils.php");
 
+$st = $db->prepare("SELECT * FROM video WHERE id=? LIMIT 1");
+$st->execute([$_GET['video']]);
+$video = @$st->fetchAll()[0];
+
+if(!$video){
+  include("404.php");
+  die();
+}
+
 if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == ''))
   unset($_GET['q']);
 
@@ -10,10 +19,6 @@ if(isset($_GET['q']) && is_string($_GET['q'])){
 }else{
   $es_q = '';
 }
-
-$st = $db->prepare("SELECT * FROM video WHERE id=? LIMIT 1");
-$st->execute([$_GET['video']]);
-$video = $st->fetchAll()[0];
 
 $st = $db->prepare("SELECT p.name, vp.value FROM video_property AS vp INNER JOIN property AS p ON p.id=vp.property WHERE vp.video=? ");
 $st->execute([$_GET['video']]);
@@ -122,37 +127,40 @@ foreach($video['property'] as $name => $values){
     continue;
   if($name == 'description')
     continue;
-  if(count($values) == 1){
-    if($name == 'url'){
-      $url = $values[0]['value'];
-    }else{
-      $url = 'portal.php?collector='.urlencode($video['property']['collector'][0]['value']).'&category['.urlencode($name).']='.urlencode($values[0]['value']);
-    }
-?>
-    <div class="info">
-      <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category='.urlencode($name); ?>"><?php echo htmlentities(ucfirst($name)); ?></a>:
-      <a class="value" href="<?php echo htmlentities($url); ?>"><?php echo htmlentities($values[0]['value']); ?></a>
-    </div>
-<?php
+  if($name[0] == '#'){
+    @list($nothing_, $where, $dispname) = explode('#', $name, 3);
+    @list($ocol, $oprop) = explode("::", $where, 2);
   }else{
+    $dispname = $name;
+  }
 ?>
     <div class="info">
-      <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category='.urlencode($name); ?>"><?php echo htmlentities(ucfirst($name)); ?></a>:
+      <a href="portal.php?collector=<?php echo urlencode($video['property']['collector'][0]['value']).'&category='.urlencode($name); ?>"><?php echo htmlentities(ucfirst($dispname)); ?></a>:
 <?php
     foreach($values as $value){
+      $url = '';
       if($name == 'url'){
         $url = $value['value'];
+      }else if($name[0] == '#'){
+        if($oprop){
+          $url = 'portal.php?collector='.urlencode($ocol).'&category['.urlencode($oprop).']='.urlencode($value['value']);
+        }else{
+          $st = $db->prepare("SELECT v.* FROM video AS v INNER JOIN video_property AS col ON col.video=v.id AND col.value=? INNER JOIN property AS pcol ON col.property=pcol.id AND pcol.name='collector' WHERE v.name=? LIMIT 1");
+          $st->execute([$ocol, $value['value']]);
+          $pvideo = @$st->fetch();
+          if($pvideo)
+            $url = 'view.php?video=' . $pvideo['id'] . '#current';
+        }
       }else{
         $url = 'portal.php?collector='.urlencode($video['property']['collector'][0]['value']).'&category['.urlencode($name).']='.urlencode($value['value']);
       }
 ?>
-      <a class="value" href="<?php echo htmlentities($url); ?>"><?php echo htmlentities($value['value']); ?></a>
+      <a class="value"<?php if($url){ ?> href="<?php echo htmlentities($url); ?>"<?php } ?>><?php echo htmlentities($value['value']); ?></a>
 <?php
     }
 ?>
     </div>
 <?php
-  }
 }
 ?>
     </div>
