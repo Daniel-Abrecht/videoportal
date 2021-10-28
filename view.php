@@ -20,6 +20,10 @@ if(isset($_GET['q']) && is_string($_GET['q'])){
   $es_q = '';
 }
 
+if(!isset($_GET['order']))
+  if(isset($_GET['category']) && isset($_GET['category']['playlist']))
+    $_GET['order'] = "playlist_index";
+
 $st = $db->prepare("SELECT p.name, vp.value FROM video_property AS vp INNER JOIN property AS p ON p.id=vp.property WHERE vp.video=? ");
 $st->execute([$_GET['video']]);
 $video['property'] = [];
@@ -61,7 +65,17 @@ foreach($st->fetchAll() as $property){
     $query .= ' WHERE v.name LIKE ?';
     $args[] = '%'.$_GET['q'].'%';
   }
-  $query .= ' ORDER BY v.date DESC, v.name DESC';
+  if(isset($_GET['order'])){
+    $query .= " LEFT JOIN property AS po ON po.name=?";
+    $args[] = $_GET['order'];
+    $query .= " LEFT JOIN video_property AS vpo ON vpo.video=v.id AND vpo.property=po.id";
+    $query .= ' GROUP BY v.id';
+    $ad = isset($_GET['reverse']) ? 'DESC' : 'ASC';
+    $query .= " ORDER BY CAST(vpo.value AS INT) $ad, vpo.value $ad, v.name $ad";
+  }else{
+    $ad = isset($_GET['reverse']) ? 'ASC' : 'DESC';
+    $query .= " ORDER BY v.date $ad, v.name $ad";
+  }
   $st = $db->prepare($query);
   $st->execute($args);
   $videos = $st->fetchAll(\PDO::FETCH_ASSOC);

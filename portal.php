@@ -6,6 +6,10 @@ $s_category = @$_GET['category'];
 if(isset($_GET['q']) && (!is_string($_GET['q']) || $_GET['q'] == ''))
   unset($_GET['q']);
 
+if(!isset($_GET['order']))
+  if(isset($_GET['category']) && isset($_GET['category']['playlist']))
+    $_GET['order'] = "playlist_index";
+
 ?><!doctype html>
 <html>
 <head>
@@ -80,7 +84,7 @@ if(isset($_GET['q']) && is_string($_GET['q'])){
 }
 $query .= "
   GROUP BY nvp.property, nvp.value
-  ORDER BY p.name ASC, nvp.value ASC
+  ORDER BY CAST(nvp.value AS INT) ASC, nvp.value ASC
 ";
 $st = $db->prepare($query);
 $st->execute($args);
@@ -212,7 +216,17 @@ if(is_string(@$s_category)){
     $query .= ' WHERE v.name LIKE ?';
     $args[] = '%'.$_GET['q'].'%';
   }
-  $query .= ' ORDER BY v.date DESC, v.name DESC';
+  if(isset($_GET['order'])){
+    $query .= " LEFT JOIN property AS po ON po.name=?";
+    $args[] = $_GET['order'];
+    $query .= " LEFT JOIN video_property AS vpo ON vpo.video=v.id AND vpo.property=po.id";
+    $query .= ' GROUP BY v.id';
+    $ad = isset($_GET['reverse']) ? 'DESC' : 'ASC';
+    $query .= " ORDER BY CAST(vpo.value AS INT) $ad, vpo.value $ad, v.name $ad";
+  }else{
+    $ad = isset($_GET['reverse']) ? 'ASC' : 'DESC';
+    $query .= " ORDER BY v.date $ad, v.name $ad";
+  }
   $st = $db->prepare('SELECT count(v.id) AS count '.$query);
   $st->execute($args);
   $count = $st->fetchAll(\PDO::FETCH_ASSOC)[0]['count'];

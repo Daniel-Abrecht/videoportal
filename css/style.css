@@ -227,6 +227,9 @@ table {
 
 .videoinfo .info a {
   color: inherit;
+}
+
+.videoinfo .info a:not([href^='http://']):not([href^='https://']) {
   text-decoration: none;
 }
 
