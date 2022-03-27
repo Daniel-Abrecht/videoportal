@@ -220,25 +220,33 @@ if(is_string(@$s_category)){
     $query .= " LEFT JOIN property AS po ON po.name=?";
     $args[] = $_GET['order'];
     $query .= " LEFT JOIN video_property AS vpo ON vpo.video=v.id AND vpo.property=po.id";
-    $query .= ' GROUP BY v.id';
     $ad = isset($_GET['reverse']) ? 'DESC' : 'ASC';
     $query .= " ORDER BY CAST(vpo.value AS INT) $ad, vpo.value $ad, v.name $ad";
   }else{
     $ad = isset($_GET['reverse']) ? 'ASC' : 'DESC';
     $query .= " ORDER BY v.date $ad, v.name $ad";
   }
-  $st = $db->prepare('SELECT count(v.id) AS count '.$query);
+  $st = $db->prepare('SELECT count(*) AS count '.$query);
   $st->execute($args);
   $count = $st->fetchAll(\PDO::FETCH_ASSOC)[0]['count'];
   $pages = ceil($count/$limit);
   if($page >= $pages)
     $page = $pages - 1;
   $query .= ' LIMIT ? OFFSET ?';
-  $args[] = $limit;
-  $args[] = $page * $limit;
+  $il = count($args);
+  $args[$il+0] = $limit;
+  $args[$il+1] = $page * $limit;
   $st = $db->prepare('SELECT v.*, EXISTS(SELECT * FROM `source` WHERE video=v.id AND type=\'I\') AS has_thumb '.$query);
   $st->execute($args);
   $videos = $st->fetchAll(\PDO::FETCH_ASSOC);
+
+/*
+  $args[$il+0] = 1;
+  $args[$il+1] = rand(0,$count-1);
+  $st->execute($args);
+  $random_video = $st->fetch(\PDO::FETCH_ASSOC);
+  ?><a href="view.php?video=<?php echo urlencode($random_video['id']); ?>&<?php echo arr1D2query('category',$categories).$es_q; ?>#current">🔀</a><?php
+*/
 
   echo pagination($pages, $page, $fullurl);
 

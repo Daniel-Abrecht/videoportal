@@ -6,15 +6,19 @@ error_reporting( 0 );
 @ini_set('output_handler', '');
 @apache_setenv('no-gzip', 1);
 
-if(!isset($_GET['id'])){
+$id = @explode('/',@$_SERVER['PATH_INFO'],3)[1];
+if(!$id)
+  $id = @$_GET['id'];
+
+if(!$id){
   http_response_code(404);
   die("File found found!");
 }
 
 require("db.php");
 
-$st = $db->prepare("SELECT * FROM source WHERE id=?");
-$st->execute([$_GET['id']]);
+$st = $db->prepare("SELECT s.*, v.name FROM source s LEFT JOIN video v ON s.video=v.id WHERE s.id=?");
+$st->execute([$id]);
 $source = @$st->fetchAll(\PDO::FETCH_ASSOC)[0];
 
 if(!$source || !file_exists($source['location'])){
@@ -47,11 +51,13 @@ if(isset($_SERVER['HTTP_RANGE'])){
   }
 }
 
-if( $begin>0 || $end<$size ){
-  header('HTTP/1.0 206 Partial Content');
-}else{
-  header('HTTP/1.0 200 OK');
-}
+//if( $begin>0 || $end<$size ){
+  http_response_code(206);
+//}else{
+//  http_response_code(200);
+//}
+
+
 
 //header("Cache-Control: no-cache, must-revalidate");
 //header("Pragma: no-cache");
@@ -61,6 +67,14 @@ header('Accept-Ranges: bytes');
 header("Content-Range: bytes $begin-".($end-1)."/$size");
 header('Content-Length:'.($end-$begin));
 header("Last-Modified: $time");
+
+if($source['name']){
+  $name = $source['name'] . '.' . pathinfo($source['location'], PATHINFO_EXTENSION);
+}else{
+  $name = basename($source['location']);
+}
+$name = preg_replace('/["\/%\\\\]/', '_', $name);
+header('Content-Disposition: inline; filename="'.$name.'"');
 
 $cur=$begin;
 fseek($fm,$begin);

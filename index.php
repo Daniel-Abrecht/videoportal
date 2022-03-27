@@ -7,7 +7,7 @@ require("db.php");
 <?php include("head.php"); ?>
 </head>
 <body>
-  <div class="header">Medienart/quelle auswählen</div>
+  <div class="header">Medienart/quelle auswählen<a href="random.php" style="float: right;">🔀</a></div>
   <div class="main"><div class="list">
 <?php
 

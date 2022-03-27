@@ -65,15 +65,13 @@ foreach($st->fetchAll() as $property){
     $query .= ' WHERE v.name LIKE ?';
     $args[] = '%'.$_GET['q'].'%';
   }
+  $ad = isset($_GET['reverse']) ? 'ASC' : 'DESC';
   if(isset($_GET['order'])){
     $query .= " LEFT JOIN property AS po ON po.name=?";
     $args[] = $_GET['order'];
     $query .= " LEFT JOIN video_property AS vpo ON vpo.video=v.id AND vpo.property=po.id";
-    $query .= ' GROUP BY v.id';
-    $ad = isset($_GET['reverse']) ? 'DESC' : 'ASC';
     $query .= " ORDER BY CAST(vpo.value AS INT) $ad, vpo.value $ad, v.name $ad";
   }else{
-    $ad = isset($_GET['reverse']) ? 'ASC' : 'DESC';
     $query .= " ORDER BY v.date $ad, v.name $ad";
   }
   $st = $db->prepare($query);
@@ -182,7 +180,7 @@ foreach($video['property'] as $name => $values){
 <?php
 foreach($all_media_sources as $source){
 ?>
-      <a href="video.php?id=<?php echo urlencode($source['id']); ?>" style="color: #FFF;"><?php echo $source['mime'].' '.$source['width'].'x'.$source['height']; ?></a>
+      <a href="<?php echo $source['rurl']; ?>" style="color: #FFF;"><?php echo $source['mime'].' '.$source['width'].'x'.$source['height']; ?></a>
 <?php
 }
 ?>
