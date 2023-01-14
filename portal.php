@@ -224,7 +224,7 @@ if(is_string(@$s_category)){
     $query .= " ORDER BY CAST(vpo.value AS INT) $ad, vpo.value $ad, v.name $ad";
   }else{
     $ad = isset($_GET['reverse']) ? 'ASC' : 'DESC';
-    $query .= " ORDER BY v.date $ad, v.name $ad";
+    $query .= " ORDER BY v.date $ad, v.name*1 $ad, v.name $ad";
   }
   $st = $db->prepare('SELECT count(*) AS count '.$query);
   $st->execute($args);

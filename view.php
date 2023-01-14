@@ -72,7 +72,7 @@ foreach($st->fetchAll() as $property){
     $query .= " LEFT JOIN video_property AS vpo ON vpo.video=v.id AND vpo.property=po.id";
     $query .= " ORDER BY CAST(vpo.value AS INT) $ad, vpo.value $ad, v.name $ad";
   }else{
-    $query .= " ORDER BY v.date $ad, v.name $ad";
+    $query .= " ORDER BY v.date $ad, v.name*1 $ad, v.name $ad";
   }
   $st = $db->prepare($query);
   $st->execute($args);
@@ -121,7 +121,7 @@ include("player.php");
 ?>
     <div class="videoinfo">
       <div class="info name"><?php echo htmlentities($video['name']); ?></div>
-      <?php if(@$video['date']){ ?><div class="info date"><?php echo htmlentities(date('Y-m-d', $video['date'])); ?></div><?php } ?>
+      <?php if(@$video['date']){ ?><div class="info date"><?php echo htmlentities((new DateTimeImmutable($video['date']))->format('Y-m-d')); ?></div><?php } ?>
       <br clear="both" />
 <?php
 if(isset($video['property']['description'])){
