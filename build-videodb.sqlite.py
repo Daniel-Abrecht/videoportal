@@ -9,6 +9,21 @@ import datetime
 import subprocess
 import shutil
 
+class Unbuffered(object):
+ def __init__(self, stream):
+   self.stream = stream
+ def write(self, data):
+   self.stream.write(data)
+   self.stream.flush()
+ def writelines(self, datas):
+   self.stream.writelines(datas)
+   self.stream.flush()
+ def __getattr__(self, attr):
+   return getattr(self.stream, attr)
+
+sys.stdout = Unbuffered(sys.stdout)
+sys.stderr = Unbuffered(sys.stderr)
+
 script_root = os.path.dirname(os.path.realpath(__file__))
 collector_base = os.path.join(script_root, "collectors")
 
@@ -21,6 +36,9 @@ generateThumbnails=True
 removeLostSources=True
 removeVideosWithoutSources=True
 removeUnusedProperties=True
+
+if os.path.exists(dbfile):
+  raise Exception(f"db copy {dbfile} already exists, aborting")
 
 try:
   shutil.copy(dbfile_orig, dbfile)
