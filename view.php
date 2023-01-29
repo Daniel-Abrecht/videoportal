@@ -24,7 +24,10 @@ if(!isset($_GET['order']))
   if(isset($_GET['category']) && isset($_GET['category']['playlist']))
     $_GET['order'] = "playlist_index";
 
-$st = $db->prepare("SELECT p.name, vp.value FROM video_property AS vp INNER JOIN property AS p ON p.id=vp.property WHERE vp.video=? ");
+$has_fulltext = !!count($db->query("SHOW COLUMNS FROM `video_property` LIKE 'fulltext'")->fetchAll());
+$pval = $has_fulltext ? 'COALESCE(vp.`fulltext`, vp.value)' : 'vp.value';
+
+$st = $db->prepare("SELECT p.name, $pval AS `value` FROM video_property AS vp INNER JOIN property AS p ON p.id=vp.property WHERE vp.video=? ");
 $st->execute([$_GET['video']]);
 $video['property'] = [];
 foreach($st->fetchAll() as $property){
