@@ -97,6 +97,7 @@ db.execute('''
     is_category INTEGER NOT NULL DEFAULT 1,
     identifying INTEGER NOT NULL DEFAULT 0,
     value VARCHAR(255) NOT NULL DEFAULT '',
+    `fulltext` TEXT,
     FOREIGN KEY (video) REFERENCES video(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (property) REFERENCES property(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (property, video, value)
@@ -194,7 +195,7 @@ class Collector:
       propcache[name] = id
     #if primary:
     #  db.execute('DELETE FROM video_property WHERE video=%s AND property=%s',(video,id))
-    db.execute('REPLACE INTO video_property (video,property,identifying,value,is_category) VALUES (%s,LEFT(%s,255),%s,LEFT(%s,255),%s)', (video,id,+primary,value if value else '',+iscategory))
+    db.execute('REPLACE INTO video_property (video,property,identifying,value,`fulltext`,is_category) VALUES (%s,LEFT(%s,255),%s,LEFT(%s,255),%s,%s)', (video,id,+primary,(value if value else ''), (value if value and len(str(value)) > 255 else None), +iscategory))
     #dbc.commit()
 
 c = Collector()
