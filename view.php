@@ -131,7 +131,32 @@ if(isset($video['property']['description'])){
   echo "<div class=\"info description\">";
   foreach($video['property']['description'] as $desc){
     $desc = $desc['value'];
-    echo htmlentities($desc);
+    $desc = htmlentities($desc);
+    $desc = preg_replace_callback(
+      '/(http|https|ftp|ftps):\/\/([a-z0-9-_+.]+)(\/[A-Za-z0-9-._~:\/?#[\]@!$&\]\'()*+,;%=]*)?/',
+      function($match){
+        global $db;
+        $url = html_entity_decode($match[0]);
+        $text = $match[0];
+        $urls = [$url];
+        if(preg_match('/(https:\/\/youtu.be\/|https:\/\/www.youtube.com\/watch\?v=)([^\/?#&]+)/', $url, $yt)){
+          $urls[] = "https://www.youtube.com/watch?v=".$yt[2];
+          $urls[] = "https://youtu.be/".$yt[2];
+        }
+        $st = $db->prepare('SELECT v.id, v.name FROM `property` AS p INNER JOIN `video_property` AS vp ON p.`name`=\'url\' AND vp.`property`=p.id INNER JOIN `video` as v ON vp.`video`=v.id WHERE 1=0'.str_repeat(' OR vp.`value`=?',count($urls)).' LIMIT 1');
+        $st->execute($urls);
+        $video = $st->fetchAll(\PDO::FETCH_ASSOC)[0];
+        $attrs = '';
+        if($video){
+          $url = 'view.php?video='.$video['id'];
+          $attrs .= ' title="'.htmlentities($video['name']).'"';
+        }
+        $attrs .= ' href="'.htmlentities($url).'"';
+        return '<a'.$attrs.'>'.$text.'</a>';
+      },
+      $desc
+    );
+    echo $desc;
   }
   echo "</div>\n";
 }
