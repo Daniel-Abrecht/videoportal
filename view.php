@@ -148,7 +148,7 @@ if(isset($video['property']['description'])){
         $video = $st->fetchAll(\PDO::FETCH_ASSOC)[0];
         $attrs = '';
         if($video){
-          $url = 'view.php?video='.$video['id'];
+          $url = 'view.php?video='.$video['id'].'#current';
           $attrs .= ' title="'.htmlentities($video['name']).'"';
         }
         $attrs .= ' href="'.htmlentities($url).'"';
