@@ -1,5 +1,6 @@
 <?php
 require("db.php");
+require("config.php");
 ?><!doctype html>
 <html>
 <head>
@@ -20,6 +21,17 @@ foreach($collectors as $collector){
         <img src="<?php echo htmlentities(@glob("image/collector/$collector.*")[0]); ?>" />
       </span>
       <span class="name"><?php echo htmlentities(ucfirst($collector)); ?></span>
+    </a>
+<?php
+}
+
+if(isset($tv_playlist)){
+?>
+    <a class="entry collector" href="tv.php">
+      <span class="image">
+        <img src="<?php echo htmlentities(@glob("image/collector/tv.*")[0]); ?>" />
+      </span>
+      <span class="name">TV</span>
     </a>
 <?php
 }

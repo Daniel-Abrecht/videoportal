@@ -35,12 +35,15 @@ table {
   background-color: #0FF;
 }
 
-.sidebarlist > .entry.current {
+.sidebarlist > .entry.current,
+.sidebarlist > .entry > :target + * {
+  display: block;
   color: #000 !important;
   background-color: #FFF !important;
 }
 
-.sidebarlist #current {
+.sidebarlist #current,
+.sidebarlist :target {
   position: relative;
   right: 100vh;
   display: block;
@@ -49,9 +52,11 @@ table {
   margin: 0;
   padding: 0;
   bottom: calc(50vh - 2rem - 50%);
+  outline: none;
 }
 
-.sidebarlist > .entry.current .name {
+.sidebarlist > .entry.current .name,
+.sidebarlist > .entry :target + * .name {
   background-color: rgba(255,255,255,0.75) !important;
 }
 

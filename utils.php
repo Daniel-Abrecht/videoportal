@@ -1,5 +1,33 @@
 <?php
 
+function resolve_url($path, $base){
+  if(preg_match('/^(http|https):\/\//', $path))
+    return $path;
+  preg_match('/^((http|https):\/\/[^\/]+)\/([^?#]*?\/)?([^?#\/]*)?([#?]|$)/', $base, $parts);
+  if(@$path[0] == '/')
+    return $parts[1] . '/' . $path;
+  return $parts[1] . '/' . $parts[3] . '/' . $path;
+}
+
+function load_playlist($playlist){
+  $programs = [];
+  $contents = file_get_contents($playlist);
+  $next_name = null;
+  foreach(explode("\n",$contents) as $line){
+    if(!$line) continue;
+    if(@$line[0] == '#'){
+      if(str_starts_with($line,'#EXTINF:0,'))
+        $next_name = substr($line, 10);
+    }else{
+      if(!$next_name)
+        $next_name = rawurldecode(@end(explode('/',$line)));
+      $programs[$next_name] = resolve_url($line, $playlist);
+      $next_name = null;
+    }
+  }
+  return $programs;
+}
+
 function arr1D2query($name, $x){
   if(!$x)
     return '';
