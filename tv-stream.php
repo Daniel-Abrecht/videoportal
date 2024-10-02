@@ -32,7 +32,7 @@ for($i=0; $i<10; $i++){
     "-analyzeduration", "20", /*"-probesize", "300000",*/ "-flags", "low_delay",
     "-i", $src, /*"-pix_fmt", "yuv420p",*/
     /*"-f", "lavfi", "-i", "testsrc=size=1280x720", "-pix_fmt", "yuv420p", "-shortest",*/
-    "-sn",
+    "-sn", "-ac", "2",
     "-c:v", "libx264",
     "-b:v:0", "3000K", "-maxrate:v:0", "3000K", "-bufsize:v:0", "3000K/2",
     /*"-b:v:1", "3000K", "-maxrate:v:1", "3000K", "-bufsize:v:1", "3000K/2",*/
