@@ -26,7 +26,7 @@ class Unbuffered(object):
 sys.stdout = Unbuffered(sys.stdout)
 sys.stderr = Unbuffered(sys.stderr)
 
-fcntl.flock(os.open("/proc/self/exe", os.O_RDONLY), fcntl.LOCK_EX|fcntl.LOCK_NB)
+fcntl.flock(os.open(__file__, os.O_RDONLY), fcntl.LOCK_EX|fcntl.LOCK_NB)
 
 script_root = os.path.dirname(os.path.realpath(__file__))
 collector_base = os.path.join(script_root, "collectors")
@@ -78,6 +78,7 @@ db.execute('''
     width INTEGER NOT NULL,
     height INTEGER NOT NULL,
     duration INTEGER NOT NULL,
+    lang VARCHAR(2),
     generated INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (video) REFERENCES video(id) ON DELETE CASCADE ON UPDATE CASCADE
   )
@@ -111,7 +112,7 @@ collectorname = ''
 propcache={}
 
 class Collector:
-  def addVideo(self, name, ids=None, date=None, collector=None):
+  def addVideo(self, name, ids=None, date=None, collector=None, nocreate=False):
     video=None
     if not ids:
       ids={}
@@ -134,6 +135,8 @@ class Collector:
         date = datetime.datetime.fromtimestamp(date)
       date = date.strftime('%Y-%m-%d %H:%M:%S')
     if not video:
+      if nocreate:
+        return None
       db.execute('INSERT INTO video (name,date) VALUES (LEFT(%s,255),%s)',(name,date))
       video=db.lastrowid
     elif date:
@@ -143,12 +146,21 @@ class Collector:
     dbc.commit()
     return video
 
-  def addSource(self,video,location,generated=False):
+  def getVideoByProperty(self, property, value):
+    db.execute('SELECT vp.`video` FROM `video_property` AS vp INNER JOIN `property` AS p ON p.id=vp.`property` AND p.`name`=%s WHERE vp.`value`=%s LIMIT 1', (property, value))
+    id = db.fetchone()
+    if not id:
+      return None
+    return id[0]
+
+  def addSource(self,video,location,generated=False,lang=None):
+    if lang is None and len(location.split('.')[-2]) == 2:
+      lang = location.split('.')[-2]
     db.execute('SELECT id FROM source WHERE location=%s', (location,))
     if db.fetchone() is not None:
       return
     mime = magic.detect_from_filename(location).mime_type
-    type = '%s'
+    type = None
     command = ['/usr/bin/ffprobe','-v','quiet','-print_format','json','-show_format','-show_streams','--',location]
     all = json.loads(subprocess.check_output(command).decode('utf-8',errors='ignore'))
     streams = all['streams']
@@ -159,6 +171,10 @@ class Collector:
       type = 'V'
     elif any(stream.get('codec_type') == 'audio' for stream in streams) or str.startswith(mime, "audio/"):
       type = 'A'
+    elif any(stream.get('codec_type') == 'subtitle' for stream in streams):
+      type = 'S'
+    if type is None:
+      raise Exception("Unknown file type for source file: "+location);
     info = streams[0]
     for stream in streams:
       if type == 'A':
@@ -182,7 +198,7 @@ class Collector:
     duration = math.ceil(float(info['duration']))
     width = int(info['width'])
     height = int(info['height'])
-    db.execute('REPLACE INTO source (video, location, type, mime, width, height, duration, generated) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)', (video, location, type, mime, width, height, duration, +generated))
+    db.execute('REPLACE INTO source (video, location, type, mime, width, height, duration, generated, lang) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)', (video, location, type, mime, width, height, duration, +generated, lang))
     #dbc.commit()
     return db.lastrowid
 

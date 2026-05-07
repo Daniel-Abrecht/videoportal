@@ -76,6 +76,7 @@ db.execute('''
     height INTEGER NOT NULL,
     duration INTEGER NOT NULL,
     generated INTEGER NOT NULL DEFAULT 0,
+    lang VARCHAR(2),
     FOREIGN KEY (video) REFERENCES video(id) ON DELETE CASCADE ON UPDATE CASCADE
   )
 ''');
@@ -132,7 +133,9 @@ class Collector:
 #    dbc.commit()
     return video
 
-  def addSource(self,video,location,generated=False):
+  def addSource(self,video,location,generated=False,lang=None):
+    if lang is None and len(location.split('.')[-2]) == 2:
+      lang = location.split('.')[-2]
     if db.execute('SELECT id FROM source WHERE location=?', (location,)).fetchone() is not None:
       return
     mime = magic.detect_from_filename(location).mime_type
@@ -147,6 +150,8 @@ class Collector:
       type = 'V'
     elif any(stream.get('codec_type') == 'audio' for stream in streams) or str.startswith(mime, "audio/"):
       type = 'A'
+    elif any(stream.get('codec_type') == 'subtitle' for stream in streams):
+      type = 'S'
     info = streams[0]
     for stream in streams:
       if type == 'A':
