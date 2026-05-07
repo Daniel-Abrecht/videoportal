@@ -24,6 +24,7 @@ foreach($sources as &$source){
       $has_audio = true;
   }
 }
+unset($source);
 if(!$has_audio)
   $all_audio = false;
 
@@ -36,14 +37,16 @@ usort($sources, 'area_sort');
 if(isset($_COOKIE['screensize'])){
   $ss = explode("x",$_COOKIE['screensize']);
   rsort($ss);
+
   $remove_next = false;
   foreach($sources as $k => $source){
     if($source['type'] != "V" && $source['type'] != "A")
       continue;
     $vs = [$source['width'],$source['height']];
-    rsort($ss);
-    if($remove_next)
+    rsort($vs);
+    if($remove_next){
       unset($sources[$k]);
+    }
     if($vs[0] >= $ss[0] || $vs[1] >= $ss[1])
       $remove_next = true;
   }
@@ -57,6 +60,12 @@ $sources = array_reverse($sources);
 <?php
 foreach($sources as $source)
 switch($source['type']){
+  case 'S': {
+    echo '  <track kind="subtitles" src="'.$source['rurl'].'" '
+           . 'label="'.htmlentities($source['lang']).'"'
+           . 'srclang="'.htmlentities($source['lang']).'"'
+           . 'type="'.htmlentities($source['mime']).'" />';
+  } break;
   case 'A':
   case 'V': {
     echo '  <source src="'.$source['rurl'].'" '
